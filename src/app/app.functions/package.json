@@ -1,0 +1,10 @@
+{
+  "name": "deal-test-functions",
+  "version": "1.0.0",
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@hubspot/api-client": "^7.0.1",
+    "axios": "^1.6.0"
+  }
+}

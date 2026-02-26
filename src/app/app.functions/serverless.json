@@ -1,0 +1,16 @@
+{
+  "appFunctions": {
+    "myFunc": {
+      "file": "example-function.js",
+      "secrets": []
+    },
+    "graphql-data-fetcher": {
+      "file": "graphql-data-fetcher.js",
+      "secrets": []
+    },
+    "associations-handler": {
+      "file": "associations-handler.js",
+      "secrets": []
+    }
+  }
+}

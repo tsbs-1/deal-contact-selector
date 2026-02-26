@@ -1,0 +1,17 @@
+{
+  "type": "crm-card",
+  "data": {
+    "title": "Deal Contact Selector",
+    "description": "関連会社のコンタクトを Deal に関連付けるカード",
+    "uid": "deal_contact_selector_card",
+    "location": "crm.record.tab",
+    "module": {
+      "file": "DealContactSelector.jsx"
+    },
+    "previewImage": {
+      "file": "assets/example-card-preview.png",
+      "altText": "Deal Contact Selector app card UI extension"
+    },
+    "objectTypes": [{ "name": "deals" }]
+  }
+}
