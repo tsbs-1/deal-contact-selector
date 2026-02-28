@@ -4,8 +4,8 @@
       "file": "example-function.js",
       "secrets": []
     },
-    "graphql-data-fetcher": {
-      "file": "graphql-data-fetcher.js",
+    "deal-contact-data-fetcher": {
+      "file": "deal-contact-data-fetcher.js",
       "secrets": []
     },
     "associations-handler": {

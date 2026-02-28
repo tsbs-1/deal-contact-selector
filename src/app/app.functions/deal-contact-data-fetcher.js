@@ -43,7 +43,6 @@ exports.main = async (context = {}) => {
       return ids;
     };
 
-    // 1. Deal 本体を取得
     const dealResp = await client.get(`/crm/v3/objects/deals/${dealId}`, {
       params: {
         properties: 'dealname'
@@ -57,11 +56,9 @@ exports.main = async (context = {}) => {
 
     const dealName = dealRecord.properties?.dealname || '';
 
-    // 2. Deal に紐づく会社・既存コンタクトを v4 associations API で全件取得
     const companyIds = await fetchAllAssociations('deal', dealId, 'company');
     const existingContactIds = await fetchAllAssociations('deal', dealId, 'contact');
 
-    // 3. 会社ごとの関連コンタクト ID を全件取得
     const companyToContactIds = new Map();
     const allContactIdSet = new Set(existingContactIds);
 
@@ -95,7 +92,6 @@ exports.main = async (context = {}) => {
       };
     }
 
-    // 4. 会社情報（名前）を取得
     let companies = [];
     if (companyIds.length > 0) {
       const companyBatchResp = await client.post(
@@ -117,7 +113,6 @@ exports.main = async (context = {}) => {
       companies.map((c) => [c.hs_object_id, c])
     );
 
-    // 5. コンタクト詳細を一括取得
     const contactBatchResp = await client.post(
       '/crm/v3/objects/contacts/batch/read',
       {
@@ -137,7 +132,6 @@ exports.main = async (context = {}) => {
       });
     });
 
-    // 6. 会社に紐づくコンタクト一覧（会社情報付き）を構築
     const allCompanyContacts = [];
 
     companyToContactIds.forEach((contactIds, companyId) => {
@@ -153,14 +147,11 @@ exports.main = async (context = {}) => {
       });
     });
 
-    // 7. 既存関連付けコンタクト
     const existingContacts = existingContactIds
       .map((id) => contactsById.get(id))
       .filter(Boolean);
 
     const existingIdsSet = new Set(existingContactIds);
-
-    // 8. 選択可能なコンタクト（まだ Deal に紐づいていないもの）
     const availableContacts = allCompanyContacts.filter(
       (contact) => !existingIdsSet.has(contact.hs_object_id)
     );
@@ -184,4 +175,3 @@ exports.main = async (context = {}) => {
     throw error;
   }
 };
-
