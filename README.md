@@ -1,53 +1,53 @@
 # Deal Contact Selector App
 
-HubSpot の Deal レコード上で、以下を実現する Private App です。
+A HubSpot private app that lets you do the following on Deal records:
 
-- Deal に関連する会社のコンタクトを一覧表示
-- すでに Deal に関連済みのコンタクトを除外
-- 未関連コンタクトを選択して Deal に一括関連付け
+- List contacts associated with companies linked to the Deal
+- Exclude contacts already associated with the Deal
+- Select unassociated contacts and bulk-associate them with the Deal
 
-UI Extension + Serverless Functions + HubSpot CRM REST API で構成されています。
-
----
-
-## 1. 機能概要
-
-### 対象画面
-
-- CRM Deal レコードのタブ上に `Deal Contact Selector` カードを表示
-
-### できること
-
-- Deal に紐づく会社を取得
-- その会社に紐づくコンタクトを取得
-- すでに Deal と直接関連付いているコンタクトを除外
-- 検索 / フィルター / 選択 / 一括関連付け
-
-### データ取得の方針
-
-- GraphQL は使用せず、CRM REST API を使用
-- Associations API (v4) はページネーション前提で全件取得
+Built with UI Extensions, serverless functions, and the HubSpot CRM REST API.
 
 ---
 
-## 2. アーキテクチャ
+## 1. Feature overview
 
-### フロントエンド（UI Extension）
+### Where it appears
+
+- Shows a **Deal Contact Selector** card on the Deal record tab in CRM
+
+### What you can do
+
+- Resolve companies linked to the Deal
+- Load contacts linked to those companies
+- Exclude contacts already directly associated with the Deal
+- Search, filter, select, and bulk-associate
+
+### Data loading approach
+
+- Uses the CRM REST API (not GraphQL)
+- Associations API (v4) is used with pagination to fetch all records
+
+---
+
+## 2. Architecture
+
+### Frontend (UI Extension)
 
 - `src/app/extensions/DealContactSelector.jsx`
-  - HubSpot UI コンポーネントでカードUIを構築
-  - `runServerlessFunction` を通してサーバレス関数を呼び出し
+  - Card UI built with HubSpot UI components
+  - Calls serverless functions via `runServerlessFunction`
 
-### サーバレス関数
+### Serverless functions
 
 - `src/app/app.functions/deal-contact-data-fetcher.js`
-  - Deal / Company / Contact を CRM REST API から取得
-  - 関連済み / 未関連を判定して UI 向けデータを返却
+  - Fetches Deal, Company, and Contact data from the CRM REST API
+  - Determines associated vs. unassociated contacts and returns data for the UI
 
 - `src/app/app.functions/associations-handler.js`
-  - 選択されたコンタクトを Deal に関連付け
+  - Associates selected contacts with the Deal
 
-### 関数登録
+### Function registration
 
 - `src/app/app.functions/serverless.json`
   - `deal-contact-data-fetcher`
@@ -55,9 +55,9 @@ UI Extension + Serverless Functions + HubSpot CRM REST API で構成されてい
 
 ---
 
-## 3. 使用 API（HubSpot CRM REST）
+## 3. APIs used (HubSpot CRM REST)
 
-### 取得系
+### Read
 
 - `GET /crm/v3/objects/deals/{dealId}?properties=dealname`
 - `GET /crm/v4/objects/deal/{dealId}/associations/company`
@@ -66,15 +66,15 @@ UI Extension + Serverless Functions + HubSpot CRM REST API で構成されてい
 - `POST /crm/v3/objects/companies/batch/read`
 - `POST /crm/v3/objects/contacts/batch/read`
 
-### 更新系
+### Write
 
 - `PUT /crm/v4/objects/deal/{dealId}/associations/default/contact/{contactId}`
 
 ---
 
-## 4. 必要なスコープ
+## 4. Required scopes
 
-`src/app/app.json` に定義:
+Defined in `src/app/app.json`:
 
 - `crm.objects.contacts.read`
 - `crm.objects.contacts.write`
@@ -84,30 +84,29 @@ UI Extension + Serverless Functions + HubSpot CRM REST API で構成されてい
 
 ---
 
-## 5. セットアップ
+## 5. Setup
 
-## 前提
+### Prerequisites
 
-- HubSpot アカウント
-- [HubSpot CLI](https://www.npmjs.com/package/@hubspot/cli) インストール済み
-- CLI ログイン済み (`hs auth`)
+- A HubSpot account
+- [HubSpot CLI](https://www.npmjs.com/package/@hubspot/cli) installed
+- Logged in to the CLI (`hs auth`)
 
-### 環境変数（サーバレス）
+### Environment variables (serverless)
 
-サーバレスで Private App Token を使う場合は、HubSpot 側でシークレットを設定してください。
-このプロジェクトでは `PRIVATE_APP_ACCESS_TOKEN` を参照します。
+If you use a private app access token in serverless functions, configure the secret in HubSpot. This project references `PRIVATE_APP_ACCESS_TOKEN`.
 
 ---
 
-## 6. 開発コマンド
+## 6. Development commands
 
-### ローカル開発
+### Local development
 
 ```bash
 hs project dev
 ```
 
-### アップロード + デプロイ
+### Upload and deploy
 
 ```bash
 hs project upload
@@ -115,10 +114,10 @@ hs project upload
 
 ---
 
-## 7. 主要ファイル
+## 7. Key files
 
 ```text
-deal-test/
+.
 ├── hsproject.json
 └── src/
     └── app/
@@ -134,41 +133,41 @@ deal-test/
 
 ---
 
-## 8. よくある問題と対処
+## 8. Common issues and fixes
 
-### 1) コンタクトが一部しか表示されない
+### 1) Only some contacts are shown
 
-- 原因: associations のページネーション未対応
-- 対処: v4 associations API で `after` を使って全件取得
+- **Cause:** Associations not fully paginated
+- **Fix:** Use the v4 associations API with `after` to fetch all pages
 
-### 2) UI が崩れる / 列が揃わない
+### 2) Broken layout / misaligned columns
 
-- 原因: 独自 CSS で疑似テーブルを再現
-- 対処: HubSpot 標準の `Table` 系コンポーネントを使う
+- **Cause:** Custom CSS mimicking a table
+- **Fix:** Use HubSpot’s standard `Table` components
 
-### 3) 関連付けで 400 エラー
+### 3) 400 errors when associating
 
-- 原因: 関連付け endpoint 形式の不一致
-- 対処: v4 default association endpoint を使用
+- **Cause:** Wrong association endpoint format
+- **Fix:** Use the v4 default association endpoint
 
-### 4) スコープ不足エラー
+### 4) Insufficient scope errors
 
-- 原因: `app.json` の scopes 不足
-- 対処: 必要スコープを追加して再デプロイ
-
----
-
-## 9. 注意事項
-
-- `platformVersion: 2025.1` を使用しています（`hsproject.json`）
-- HubSpot のアナウンスに従い、将来的な platform 移行計画を持つことを推奨
+- **Cause:** Missing scopes in `app.json`
+- **Fix:** Add the required scopes and redeploy
 
 ---
 
-## 10. 命名について
+## 9. Notes
 
-以前のテンプレート名 `Get started App` から、以下へ変更済みです。
+- Uses `platformVersion: 2025.1` (see `hsproject.json`)
+- Follow HubSpot announcements and plan for future platform migrations
 
-- App名: `Deal Contact Selector App`
+---
 
-`uid` は既存デプロイ資産との互換性維持のため変更していません。
+## 10. Naming
+
+Renamed from the previous template name **Get started App** to:
+
+- App name: **Deal Contact Selector App**
+
+The `uid` was left unchanged to stay compatible with existing deployed assets.
